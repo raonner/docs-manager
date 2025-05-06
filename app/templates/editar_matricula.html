@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+
+{% block title %}Editar Matrícula - Sistema de Gerenciamento de Matrículas{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{{ url_for('main.index') }}">Início</a></li>
+                <li class="breadcrumb-item"><a href="{{ url_for('main.projeto', projeto_id=projeto.id) }}">{{ projeto.nome }}</a></li>
+                <li class="breadcrumb-item active">Editar Matrícula</li>
+            </ol>
+        </nav>
+        
+        <h1 class="display-5">
+            <i class="fas fa-edit text-primary me-2"></i>
+            Editar Matrícula
+        </h1>
+        <p class="lead text-muted">
+            Edite as informações da matrícula abaixo.
+        </p>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <form action="{{ request.url }}" method="POST">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="matricula" class="form-label">Matrícula <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="matricula" name="matricula" required 
+                                   value="{{ matricula['Matrícula'] }}" placeholder="Ex: Livro 2-A, fls. 123, Mat. 456">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="nome_documento" class="form-label">Nome do Documento <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="nome_documento" name="nome_documento" required 
+                                   value="{{ matricula['Nome do Documento'] }}" placeholder="Ex: Escritura de Venda e Compra">
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <label for="data" class="form-label">Data</label>
+                            <input type="date" class="form-control" id="data" name="data" 
+                                   value="{{ matricula['Data'] if matricula['Data'] else '' }}">
+                        </div>
+                        <div class="col-md-4">
+                            <label for="origem" class="form-label">Origem <span class="text-danger">*</span></label>
+                            <select class="form-select" id="origem" name="origem" required>
+                                <option value="">Selecione um arquivo de origem</option>
+                                {% for arquivo in arquivos_origem %}
+                                    <option value="{{ arquivo.nome.split('_')[0] }}" {% if arquivo.nome.split('_')[0] == matricula['Origem'] %}selected{% endif %}>
+                                        {{ arquivo.nome }}
+                                    </option>
+                                {% endfor %}
+                                <option value="{{ matricula['Origem'] }}" {% if matricula['Origem'] not in [arquivo.nome.split('_')[0] for arquivo in arquivos_origem] %}selected{% endif %}>
+                                    {{ matricula['Origem'] }} (atual)
+                                </option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="volume" class="form-label">Volume <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="volume" name="volume" required 
+                                   value="{{ matricula['Volume'] }}" placeholder="Ex: 1">
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <label for="paginas" class="form-label">Páginas <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="paginas" name="paginas" required 
+                                   value="{{ matricula['Páginas'] }}" placeholder="Ex: 1-5 ou 3">
+                        </div>
+                        <div class="col-md-8">
+                            <label for="obs" class="form-label">Observações</label>
+                            <input type="text" class="form-control" id="obs" name="obs" 
+                                   value="{{ matricula['Obs'] if matricula['Obs'] else '' }}" placeholder="Ex: Documento incompleto">
+                        </div>
+                    </div>
+                    
+                    <hr class="my-4">
+                    
+                    <div class="d-flex justify-content-between">
+                        <a href="{{ url_for('main.projeto', projeto_id=projeto.id) }}" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left me-2"></i> Voltar
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-2"></i> Salvar Alterações
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card bg-light">
+            <div class="card-body">
+                <h5 class="card-title">
+                    <i class="fas fa-info-circle text-primary me-2"></i>
+                    Informações
+                </h5>
+                <p class="card-text">
+                    Ao editar uma matrícula, você está modificando os dados no arquivo Excel do projeto.
+                </p>
+                <p class="card-text">
+                    Campos marcados com <span class="text-danger">*</span> são obrigatórios.
+                </p>
+                <p class="card-text">
+                    Após salvar as alterações, você será redirecionado para a página do projeto.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+
+{% block title %}Início - Sistema de Gerenciamento de Matrículas{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h1 class="display-5">
+            <i class="fas fa-folder-open text-primary me-2"></i>
+            Projetos de Matrículas
+        </h1>
+        <p class="lead text-muted">
+            Gerencie seus projetos de extração e organização de documentos de matrículas.
+        </p>
+    </div>
+    <div class="col-md-4 text-end align-self-center">
+        <a href="{{ url_for('main.novo_projeto') }}" class="btn btn-primary btn-lg">
+            <i class="fas fa-plus me-2"></i> Novo Projeto
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    {% if projetos %}
+        {% for projeto in projetos %}
+            <div class="col-md-6 col-lg-4 mb-4">
+                <div class="card h-100 shadow-sm">
+                    <div class="card-header bg-light">
+                        <h5 class="card-title mb-0">
+                            <i class="fas fa-folder text-primary me-2"></i>
+                            {{ projeto.nome }}
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        {% if projeto.descricao %}
+                            <p class="card-text">{{ projeto.descricao }}</p>
+                        {% else %}
+                            <p class="card-text text-muted"><em>Sem descrição</em></p>
+                        {% endif %}
+                        
+                        <div class="d-flex justify-content-between align-items-center mt-3">
+                            <small class="text-muted">
+                                Criado em: {{ projeto.data_criacao.strftime('%d/%m/%Y') }}
+                            </small>
+                        </div>
+                    </div>
+                    <div class="card-footer bg-white">
+                        <a href="{{ url_for('main.projeto', projeto_id=projeto.id) }}" class="btn btn-outline-primary w-100">
+                            <i class="fas fa-folder-open me-2"></i> Abrir Projeto
+                        </a>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    {% else %}
+        <div class="col-12">
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle me-2"></i>
+                Nenhum projeto encontrado. Clique em "Novo Projeto" para começar.
+            </div>
+            
+            <div class="text-center py-5">
+                <img src="{{ url_for('static', filename='img/empty-folder.svg') }}" alt="Pasta vazia" class="img-fluid mb-4" style="max-width: 200px; opacity: 0.6;">
+                <h3 class="text-muted">Comece criando seu primeiro projeto</h3>
+                <p class="lead text-muted">
+                    Organize seus documentos de matrículas em projetos para facilitar a gestão.
+                </p>
+                <a href="{{ url_for('main.novo_projeto') }}" class="btn btn-primary btn-lg mt-3">
+                    <i class="fas fa-plus me-2"></i> Criar Primeiro Projeto
+                </a>
+            </div>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

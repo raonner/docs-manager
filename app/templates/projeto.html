@@ -1,0 +1,446 @@
+{% extends "base.html" %}
+
+{% block title %}{{ projeto.nome }} - Sistema de Gerenciamento de Matrículas{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{{ url_for('main.index') }}">Início</a></li>
+                <li class="breadcrumb-item active">{{ projeto.nome }}</li>
+            </ol>
+        </nav>
+        
+        <div class="d-flex justify-content-between align-items-center">
+            <h1 class="display-5">
+                <i class="fas fa-folder-open text-primary me-2"></i>
+                {{ projeto.nome }}
+            </h1>
+            <div>
+                <button class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#processarModal">
+                    <i class="fas fa-cogs me-2"></i> Processar
+                </button>
+            </div>
+        </div>
+        
+        {% if projeto.descricao %}
+            <p class="lead text-muted">{{ projeto.descricao }}</p>
+        {% endif %}
+        
+        <div class="text-muted mb-3">
+            <small>Criado em: {{ projeto.data_criacao.strftime('%d/%m/%Y às %H:%M') }}</small>
+        </div>
+    </div>
+</div>
+
+<!-- Abas de navegação -->
+<ul class="nav nav-tabs mb-4" id="projetoTabs" role="tablist">
+    <li class="nav-item" role="presentation">
+        <button class="nav-link active" id="arquivos-tab" data-bs-toggle="tab" data-bs-target="#arquivos" type="button" role="tab">
+            <i class="fas fa-file-pdf me-2"></i> Arquivos de Origem
+        </button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="matriculas-tab" data-bs-toggle="tab" data-bs-target="#matriculas" type="button" role="tab">
+            <i class="fas fa-table me-2"></i> Índice de Matrículas
+        </button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="documentos-tab" data-bs-toggle="tab" data-bs-target="#documentos" type="button" role="tab">
+            <i class="fas fa-file-contract me-2"></i> Documentos Extraídos
+        </button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="logs-tab" data-bs-toggle="tab" data-bs-target="#logs" type="button" role="tab">
+            <i class="fas fa-history me-2"></i> Logs
+        </button>
+    </li>
+</ul>
+
+<!-- Conteúdo das abas -->
+<div class="tab-content" id="projetoTabsContent">
+    <!-- Aba de Arquivos de Origem -->
+    <div class="tab-pane fade show active" id="arquivos" role="tabpanel" aria-labelledby="arquivos-tab">
+        <div class="card shadow-sm">
+            <div class="card-header bg-light">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-file-pdf text-primary me-2"></i>
+                    Arquivos de Origem
+                </h5>
+            </div>
+            <div class="card-body">
+                <form action="{{ url_for('main.upload_arquivo', projeto_id=projeto.id) }}" method="POST" enctype="multipart/form-data" class="mb-4">
+                    <div class="row g-3 align-items-end">
+                        <div class="col-md-8">
+                            <label for="arquivo" class="form-label">Selecione um arquivo PDF</label>
+                            <input class="form-control" type="file" id="arquivo" name="arquivo" accept=".pdf">
+                        </div>
+                        <div class="col-md-4">
+                            <button type="submit" class="btn btn-primary w-100">
+                                <i class="fas fa-upload me-2"></i> Enviar Arquivo
+                            </button>
+                        </div>
+                    </div>
+                </form>
+                
+                <hr>
+                
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Nome do Arquivo</th>
+                                <th>Tamanho</th>
+                                <th>Data de Upload</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% if arquivos_origem %}
+                                {% for arquivo in arquivos_origem %}
+                                    <tr>
+                                        <td>{{ arquivo.nome }}</td>
+                                        <td>{{ (arquivo.tamanho / 1024)|round(1) }} KB</td>
+                                        <td>{{ arquivo.data_upload }}</td>
+                                        <td>
+                                            <button class="btn btn-sm btn-outline-primary" title="Visualizar" disabled>
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            {% else %}
+                                <tr>
+                                    <td colspan="4" class="text-center text-muted py-4">
+                                        <i class="fas fa-info-circle me-2"></i>
+                                        Nenhum arquivo enviado ainda.
+                                    </td>
+                                </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Aba de Índice de Matrículas -->
+    <div class="tab-pane fade" id="matriculas" role="tabpanel" aria-labelledby="matriculas-tab">
+        <div class="card shadow-sm">
+            <div class="card-header bg-light">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-table text-primary me-2"></i>
+                    Índice de Matrículas
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle me-2"></i>
+                    A funcionalidade de edição do índice será implementada em breve.
+                </div>
+                
+                <div class="d-flex justify-content-between mb-3">
+                    <button class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#adicionarMatriculaModal">
+                        <i class="fas fa-plus me-2"></i> Adicionar Matrícula
+                    </button>
+                    <div>
+                        <button class="btn btn-outline-success me-2" disabled>
+                            <i class="fas fa-file-excel me-2"></i> Importar Excel
+                        </button>
+                        <button class="btn btn-outline-secondary" disabled>
+                            <i class="fas fa-download me-2"></i> Exportar Excel
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Matrícula</th>
+                                <th>Nome do Documento</th>
+                                <th>Data</th>
+                                <th>Origem</th>
+                                <th>Volume</th>
+                                <th>Páginas</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% if matriculas %}
+                                {% for matricula in matriculas %}
+                                    <tr>
+                                        <td>{{ matricula['Matrícula'] }}</td>
+                                        <td>{{ matricula['Nome do Documento'] }}</td>
+                                        <td>{{ matricula['Data'] }}</td>
+                                        <td>{{ matricula['Origem'] }}</td>
+                                        <td>{{ matricula['Volume'] }}</td>
+                                        <td>{{ matricula['Páginas'] }}</td>
+                                        <td>
+                                            <div class="btn-group">
+                                                <a href="{{ url_for('main.editar_matricula', projeto_id=projeto.id, index=loop.index0) }}" class="btn btn-sm btn-outline-primary" title="Editar">
+                                                    <i class="fas fa-edit"></i>
+                                                </a>
+                                                <a href="{{ url_for('main.excluir_matricula', projeto_id=projeto.id, index=loop.index0) }}" class="btn btn-sm btn-outline-danger" title="Excluir" onclick="return confirm('Tem certeza que deseja excluir esta matrícula?')">
+                                                    <i class="fas fa-trash"></i>
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            {% else %}
+                                <tr>
+                                    <td colspan="7" class="text-center text-muted py-4">
+                                        <i class="fas fa-info-circle me-2"></i>
+                                        Nenhuma matrícula cadastrada ainda.
+                                    </td>
+                                </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Aba de Documentos Extraídos -->
+    <div class="tab-pane fade" id="documentos" role="tabpanel" aria-labelledby="documentos-tab">
+        <div class="card shadow-sm">
+            <div class="card-header bg-light">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-file-contract text-primary me-2"></i>
+                    Documentos Extraídos
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if arquivos_extraidos %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Nome do Arquivo</th>
+                                    <th>Caminho</th>
+                                    <th>Tamanho</th>
+                                    <th>Data de Extração</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for arquivo in arquivos_extraidos %}
+                                    <tr>
+                                        <td>{{ arquivo.nome }}</td>
+                                        <td><small class="text-muted">{{ arquivo.caminho }}</small></td>
+                                        <td>{{ (arquivo.tamanho / 1024)|round(1) }} KB</td>
+                                        <td>{{ arquivo.data_extracao }}</td>
+                                        <td>
+                                            <button class="btn btn-sm btn-outline-primary" title="Visualizar" disabled>
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        Nenhum documento foi extraído ainda. Utilize a função "Processar" para extrair os documentos.
+                    </div>
+                    
+                    <div class="text-center py-4">
+                        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#processarModal">
+                            <i class="fas fa-cogs me-2"></i> Processar Documentos
+                        </button>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Aba de Logs -->
+    <div class="tab-pane fade" id="logs" role="tabpanel" aria-labelledby="logs-tab">
+        <div class="card shadow-sm">
+            <div class="card-header bg-light">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-history text-primary me-2"></i>
+                    Logs do Projeto
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Data/Hora</th>
+                                <th>Tipo</th>
+                                <th>Mensagem</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% if projeto.logs.count() > 0 %}
+                                {% for log in projeto.logs.all() %}
+                                    <tr>
+                                        <td>{{ log.data_hora.strftime('%d/%m/%Y %H:%M:%S') }}</td>
+                                        <td>
+                                            {% if log.tipo == 'info' %}
+                                                <span class="badge bg-info">Info</span>
+                                            {% elif log.tipo == 'warning' %}
+                                                <span class="badge bg-warning">Aviso</span>
+                                            {% elif log.tipo == 'error' %}
+                                                <span class="badge bg-danger">Erro</span>
+                                            {% else %}
+                                                <span class="badge bg-secondary">{{ log.tipo }}</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>{{ log.mensagem }}</td>
+                                    </tr>
+                                {% endfor %}
+                            {% else %}
+                                <tr>
+                                    <td colspan="3" class="text-center text-muted py-4">
+                                        <i class="fas fa-info-circle me-2"></i>
+                                        Nenhum log registrado ainda.
+                                    </td>
+                                </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Processamento -->
+<div class="modal fade" id="processarModal" tabindex="-1" aria-labelledby="processarModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="processarModalLabel">
+                    <i class="fas fa-cogs me-2"></i>
+                    Processar Documentos
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+            </div>
+            <div class="modal-body">
+                <p>Selecione as operações que deseja realizar:</p>
+                
+                <div class="form-check mb-3">
+                    <input class="form-check-input" type="checkbox" id="renomearArquivos" checked>
+                    <label class="form-check-label" for="renomearArquivos">
+                        <i class="fas fa-file-signature me-2"></i>
+                        Renomear arquivos no Excel
+                    </label>
+                    <div class="form-text">
+                        Atualiza os caminhos dos arquivos na planilha com base nas informações de matrícula.
+                    </div>
+                </div>
+                
+                <div class="form-check mb-3">
+                    <input class="form-check-input" type="checkbox" id="extrairPDFs" checked>
+                    <label class="form-check-label" for="extrairPDFs">
+                        <i class="fas fa-file-pdf me-2"></i>
+                        Extrair páginas dos PDFs
+                    </label>
+                    <div class="form-text">
+                        Extrai as páginas especificadas dos PDFs de origem e salva como novos arquivos.
+                    </div>
+                </div>
+                
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    Certifique-se de que todos os arquivos de origem foram enviados e que o índice de matrículas está preenchido corretamente antes de processar.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <a href="{{ url_for('main.processar_projeto', projeto_id=projeto.id) }}" class="btn btn-primary">
+                    <i class="fas fa-play me-2"></i> Iniciar Processamento
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Modal de Adição de Matrícula -->
+<div class="modal fade" id="adicionarMatriculaModal" tabindex="-1" aria-labelledby="adicionarMatriculaModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="adicionarMatriculaModalLabel">
+                    <i class="fas fa-plus-circle me-2"></i>
+                    Adicionar Matrícula
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+            </div>
+            <form action="{{ url_for('main.adicionar_matricula', projeto_id=projeto.id) }}" method="POST">
+                <div class="modal-body">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="matricula" class="form-label">Matrícula <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="matricula" name="matricula" required
+                                placeholder="Ex: Livro 2-A, fls. 123, Mat. 456">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="nome_documento" class="form-label">Nome do Documento <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="nome_documento" name="nome_documento" required
+                                placeholder="Ex: Escritura de Venda e Compra">
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <label for="data" class="form-label">Data</label>
+                            <input type="date" class="form-control" id="data" name="data">
+                        </div>
+                        <div class="col-md-4">
+                            <label for="origem" class="form-label">Origem <span class="text-danger">*</span></label>
+                            <select class="form-select" id="origem" name="origem" required>
+                                <option value="">Selecione um arquivo de origem</option>
+                                {% for arquivo in arquivos_origem %}
+                                    <option value="{{ arquivo.nome.split('_')[0] }}">{{ arquivo.nome }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="volume" class="form-label">Volume <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="volume" name="volume" required
+                                placeholder="Ex: 1">
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <label for="paginas" class="form-label">Páginas <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="paginas" name="paginas" required
+                                placeholder="Ex: 1-5 ou 3">
+                        </div>
+                        <div class="col-md-8">
+                            <label for="obs" class="form-label">Observações</label>
+                            <input type="text" class="form-control" id="obs" name="obs"
+                                placeholder="Ex: Documento incompleto">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save me-2"></i> Salvar Matrícula
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Ativar a aba correta com base na URL
+    document.addEventListener('DOMContentLoaded', function() {
+        // Código para ativar abas baseado em hash da URL será implementado aqui
+    });
+</script>
+{% endblock %}
