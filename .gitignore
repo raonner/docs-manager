@@ -39,10 +39,10 @@ instance/
 *.db
 
 # Excel temporary files
-~$*.xlsx
-~$*.xls
+*.xls
+*.xlsx
 *.xlk
 
 # OS specific
 .DS_Store
-Thumbs.db 
+Thumbs.db
